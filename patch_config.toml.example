@@ -1,0 +1,64 @@
+# Deus Ex i18n Toolkit — patch configuration template.
+#
+# Copy this file to patch_config.toml and fill in the placeholders for your
+# localization project. Paths are resolved relative to this file's directory;
+# absolute paths are used as-is.
+#
+# Build everything (picks up ./patch_config.toml automatically):
+#     python tools/make_patch.py all
+# Build a subset:
+#     python tools/make_patch.py int contex
+# Use a different config file:
+#     python tools/make_patch.py all --config other.toml
+# Build and deploy to the target set below (or pass --deploy PATH to override):
+#     python tools/make_patch.py all --deploy
+
+[input]
+# Directory containing unmodified game binaries:
+#   DeusExUI.u, DeusExConText.u, DeusExText.u, DXFonts.utx, Extension.u,
+#   Extension.dll, DeusExText.dll.
+stock_dir = "stock"
+
+[output]
+# Where build products land. Mirrors the game's System/ + Textures/ layout.
+root = "patch"
+
+[deploy]
+# Optional. Path to the game's install root for the bare `--deploy` flag.
+# Leave empty to require an explicit `--deploy PATH` on the command line.
+target = ""
+
+# --- per-stage configuration ---
+
+[stages.int]
+# Mission .int files (UTF-8 source → UTF-16 LE + BOM).
+enable = true
+source = "translations/int"   # directory of *.int files
+
+[stages.contex]
+# Rewrites DeusExConText.u (conversation text) from a {key: text} dict.
+# Keys are export indices as decimal strings (see scan_contex output).
+enable = true
+translations = "translations/contex.json"
+
+[stages.deusextext]
+# Rewrites DeusExText.u (page text) from a {key: text} dict.
+# Keys match ExtString export names verbatim.
+enable = true
+translations = "translations/deusextext.json"
+
+[stages.font]
+# Rebuilds UFont packages with new atlases for your charset.
+enable = true
+fonts_toml = "fonts.toml"
+charset = "charset.toml"
+# Optional. Subset of {DeusExUI, DXFonts, Extension}; default = all three.
+# packages = ["DeusExUI", "DXFonts", "Extension"]
+
+[stages.dll]
+# Word-wrap helper patches for Extension.dll + DeusExText.dll. Useful for
+# scriptio-continua scripts (CJK, Thai, Lao, Khmer, Myanmar, etc.) that
+# don't use ASCII space as a wordbreak. Latin / Cyrillic teams should leave
+# this disabled; pre-built binaries are also available on GitHub Releases
+# as an optional drop-in.
+enable = false

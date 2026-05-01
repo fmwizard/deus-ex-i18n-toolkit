@@ -1,0 +1,66 @@
+# Deus Ex i18n Toolkit — fonts configuration template.
+#
+# Copy this file to fonts.toml and replace the `ttf` paths with your own font
+# files. Paths are resolved relative to this file's directory; absolute paths
+# are used as-is.
+#
+# Schema, per UFont entry:
+#   ttf        = "..."       (required) path to TrueType font
+#   size_px    = N           (required) rasterization size in pixels
+#   vsize      = N           (required) MUST match the stock UFont's vertical
+#                            size — the engine hardcodes line height per UFont
+#                            elsewhere. The toolkit verifies this against a
+#                            built-in stock-vsize table and refuses to build
+#                            on a mismatch. The values below are the correct
+#                            stock vsizes; do not change them.
+#   ascii_ttf  = "..."       (optional) fall back to this TTF for ASCII
+#                            codepoints — useful when your main font's Latin
+#                            glyphs are too wide compared to stock English
+#   vert_align = "top"|"bottom"  (optional) glyph vertical alignment within
+#                                cell — defaults to centred
+#   weight     = N           (optional) variable-font weight axis, default 400
+#
+# UFonts not listed are passed through verbatim from the stock package — there
+# is no "exclude" flag; not listing a UFont is how you skip it.
+#
+# See docs/font-pipeline-internals.md for the full schema reference, atlas
+# tier ladder, and the rationale behind each optional field.
+
+[packages.DeusExUI]
+FontMenuSmall              = { ttf = "fonts/your-font.ttf", size_px = 10, vsize = 10 }
+FontMenuSmall_DS           = { ttf = "fonts/your-font.ttf", size_px = 10, vsize = 10 }
+FontMenuHeaders            = { ttf = "fonts/your-font.ttf", size_px =  9, vsize =  9 }
+FontMenuHeaders_DS         = { ttf = "fonts/your-font.ttf", size_px = 11, vsize = 11 }
+FontFixedWidthSmall        = { ttf = "fonts/your-font.ttf", size_px = 11, vsize = 11 }
+FontFixedWidthSmall_DS     = { ttf = "fonts/your-font.ttf", size_px = 11, vsize = 11 }
+FontTiny                   = { ttf = "fonts/your-font.ttf", size_px =  9, vsize =  9 }
+FontMenuTitle              = { ttf = "fonts/your-font.ttf", size_px = 12, vsize = 12 }
+FontTitleLarge             = { ttf = "fonts/your-font.ttf", size_px = 12, vsize = 12 }
+FontSansSerif_8            = { ttf = "fonts/your-font.ttf", size_px = 13, vsize = 13 }
+FontSansSerif_8_Bold       = { ttf = "fonts/your-font.ttf", size_px = 13, vsize = 13 }
+FontConversation           = { ttf = "fonts/your-font.ttf", size_px = 17, vsize = 17 }
+FontConversationBold       = { ttf = "fonts/your-font.ttf", size_px = 17, vsize = 17 }
+FontFixedWidthLocation     = { ttf = "fonts/your-font.ttf", size_px = 17, vsize = 17 }
+FontLocation               = { ttf = "fonts/your-font.ttf", size_px = 20, vsize = 20 }
+FontComputer8x20_A         = { ttf = "fonts/your-font.ttf", size_px = 20, vsize = 20 }
+FontComputer8x20_B         = { ttf = "fonts/your-font.ttf", size_px = 20, vsize = 20 }
+FontComputer8x20_C         = { ttf = "fonts/your-font.ttf", size_px = 20, vsize = 20 }
+FontConversationLarge      = { ttf = "fonts/your-font.ttf", size_px = 23, vsize = 23 }
+FontConversationLargeBold  = { ttf = "fonts/your-font.ttf", size_px = 23, vsize = 23 }
+
+# Skip these three — leave their stock English glyphs in place:
+#   FontHUDWingDings      icon font (A/B/C are datavault icons, not letters)
+#   FontMenuExtraLarge    vsize = 29, exceeds atlas tier cap (28)
+#   FontSpinningDX        vsize = 32, animated rotating, also above cap
+
+[packages.DXFonts]
+HUDMessageTrueType         = { ttf = "fonts/your-font.ttf", size_px = 21, vsize = 21 }
+MainMenuTrueType           = { ttf = "fonts/your-font.ttf", size_px = 26, vsize = 26 }
+
+[packages.Extension]
+TechMedium                 = { ttf = "fonts/your-font.ttf", size_px = 10, vsize = 10 }
+TechMedium_B               = { ttf = "fonts/your-font.ttf", size_px = 10, vsize = 10 }
+TechMedium_DS              = { ttf = "fonts/your-font.ttf", size_px = 10, vsize = 10 }
+TechSmall                  = { ttf = "fonts/your-font.ttf", size_px =  8, vsize =  8 }
+TechSmall_DS               = { ttf = "fonts/your-font.ttf", size_px =  8, vsize =  8 }
+TechTiny                   = { ttf = "fonts/your-font.ttf", size_px =  6, vsize =  6 }

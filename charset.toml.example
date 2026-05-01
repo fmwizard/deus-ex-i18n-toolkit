@@ -1,0 +1,48 @@
+# Deus Ex i18n Toolkit — charset configuration template.
+#
+# Lists which Unicode codepoints to rasterize into the font atlas. Bigger
+# charset → bigger atlas → more VRAM, so list only what you need. All four
+# sources below are unioned; any source can be omitted.
+#
+# Schema:
+#   codecs     = ["..."]            region codec(s) to bulk-include — any name
+#                                   Python's codecs module accepts:
+#                                     gb2312, gbk, big5, shift_jis, euc-jp,
+#                                     euc-kr, cp1251, cp1252, ...
+#   ranges     = [[low, high], ...] closed integer intervals
+#   codepoints = [N, ...]           individual integer codepoints
+#   chars      = "..."              literal characters (each becomes one entry)
+#
+# All codepoints must be in the BMP (U+0000 – U+FFFF) — the engine's atlas
+# can't address higher.
+#
+# Alternative format: if you have an existing corpus dump, point the
+# `[stages.font] charset` setting at a `.txt` file instead. Every distinct
+# codepoint in the file goes in (CR/LF excluded).
+
+# Bulk: include everything covered by GB 2312 (~7000 simplified hanzi + a
+# small ASCII / punctuation subset). Replace with your script's region codec
+# (e.g. shift_jis for Japanese, euc-kr for Korean).
+codecs = ["gb2312"]
+
+# Ranges: closed intervals [low, high] inclusive both ends.
+ranges = [
+  [0x0020, 0x007E],   # printable ASCII
+  [0x00A0, 0x00FF],   # Latin-1 supplement (NBSP, common accents)
+]
+
+# Individual codepoints — typically punctuation that isn't covered by the
+# region codec above but is needed by your translation.
+codepoints = [
+  0x2026,   # …  horizontal ellipsis
+  0x2014,   # —  em dash
+  0x2013,   # –  en dash
+  0x2018,   # '  left single quote
+  0x2019,   # '  right single quote
+  0x201C,   # "  left double quote
+  0x201D,   # "  right double quote
+  0x00B7,   # ·  middle dot
+]
+
+# Literal characters — convenient for one-off additions.
+# chars = "「」『』"
