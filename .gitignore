@@ -1,3 +1,10 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+stock/
+patch/
+translations/
+patch_config.toml
+fonts.toml
+charset.toml

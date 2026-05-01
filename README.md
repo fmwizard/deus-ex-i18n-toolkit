@@ -21,28 +21,43 @@ Deeper reverse-engineering notes for anyone forking the toolkit live under `docs
 
 Six steps from a fresh clone to a built patch. Each step is a small file you fill in, except for step 6, which runs the build.
 
+### Layout
+
+`cd` into the cloned repo and run every command from there. The clone doubles as your workspace — stock files, configs, translations, and build output all live alongside `tools/` and `prebuilt/`. After Step 5:
+
+```
+dx1-i18n-toolkit/
+├── tools/                  toolkit (don't edit)
+├── prebuilt/               toolkit drop-in DLLs and DeusEx.u (don't edit)
+├── *.toml.example          toolkit templates (don't edit)
+├── stock/                  Step 1 — copied from game install
+├── fonts.toml              Step 2 — from fonts.toml.example, edited
+├── charset.toml            Step 3 — same
+├── patch_config.toml       Step 4 — same
+├── translations/           Step 5
+└── patch/                  Step 6 build output
+```
+
 ### Step 1 — copy the stock game files
 
-The build needs the original (untouched) game binaries to read from. Copy your game's `System/` directory to a working location anywhere on disk:
+The build needs the original (untouched) game binaries to read from. Create a `stock/` subdirectory in the cloned repo and copy these files into it from your game's `System/`:
 
 ```
-my-localization/
-└── stock/
-    ├── DeusExUI.u
-    ├── DeusExConText.u
-    ├── DeusExText.u
-    ├── DXFonts.utx
-    ├── Extension.u
-    ├── Extension.dll
-    ├── DeusExText.dll
-    └── ... (other System/ files; only the ones above are read)
+stock/
+├── DeusExUI.u
+├── DeusExConText.u
+├── DeusExText.u
+├── DXFonts.utx
+├── Extension.u
+├── Extension.dll
+└── DeusExText.dll
 ```
 
-Keep the originals pristine — the toolkit never writes back into `stock/`.
+Other `System/` files aren't read by the toolkit — copying them in too does no harm if that's easier than picking. Keep the originals pristine in your game install; the toolkit never writes back into `stock/`.
 
 ### Step 2 — write `fonts.toml`
 
-Copy `fonts.toml.example` and edit. One line per UFont you want to replace, grouped by package:
+Save `fonts.toml.example` as `fonts.toml` (drop the `.example` suffix) and edit. One line per UFont you want to replace, grouped by package:
 
 ```toml
 [packages.DeusExUI]
@@ -63,7 +78,7 @@ UFonts you don't list keep their stock English glyphs. Schema details and the fu
 
 ### Step 3 — write `charset.toml`
 
-Copy `charset.toml.example` and list which Unicode codepoints your atlas should contain. Multiple sources combine:
+Save `charset.toml.example` as `charset.toml` and list which Unicode codepoints your atlas should contain. Multiple sources combine:
 
 ```toml
 codecs = ["gb2312"]                    # any region codec (gb2312, shift_jis, euc-kr, ...)
@@ -76,7 +91,7 @@ Codepoints must be in the BMP (`U+0000`–`U+FFFF`) — the engine's atlas can't
 
 ### Step 4 — write `patch_config.toml`
 
-Copy `patch_config.toml.example` and adjust paths. The defaults work for a layout where `stock/`, `translations/`, `fonts.toml`, and `charset.toml` all sit next to the config file:
+Save `patch_config.toml.example` as `patch_config.toml` and adjust paths if needed. The defaults match the Layout above (everything alongside `tools/`):
 
 ```toml
 [input]
@@ -103,7 +118,7 @@ fonts_toml = "fonts.toml"
 charset = "charset.toml"
 
 [stages.dll]
-enable = false        # see §4
+enable = false        # see "Binary patches" below
 ```
 
 ### Step 5 — prepare your translations
