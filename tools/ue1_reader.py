@@ -169,12 +169,21 @@ class Package:
                 out += write_compact_index(e["offset"])
         return bytes(out)
 
-    def rewrite(self, replacements: dict, add_exports: list[dict] | None = None) -> bytes:
+    def rewrite(self, replacements: dict, add_exports: list[dict] | None = None,
+                replacement_class: str | None = None) -> bytes:
         """Serialize a new package.
 
         replacements: {export_name: new_binary_bytes}  (replace existing export data)
         add_exports: list of {class_ref, super_ref, group_ref, name, flags, blob} dicts
             for brand-new exports appended to the export table.
+        replacement_class: if set, only replace exports whose resolve_class matches.
+            UE1 script packages (.u) commonly have multiple exports sharing a
+            name — a UFont/UTexture/UPalette instance plus the UObjectProperty
+            siblings emitted for any `var Font/Texture/Palette XXX` field on a
+            UClass that declares a member of that name. Without disambiguation,
+            a name-keyed replacement clobbers the UProperty too, and the engine
+            GPFs at Class.Link when it walks the corrupted Children chain.
+            Pass replacement_class='Font' (etc) to scope the replacement.
 
         Append-only strategy. The original binary region is preserved verbatim
         so absolute-offset pointers inside unchanged exports (e.g. FMipmap.WidthOffset)
@@ -186,6 +195,18 @@ class Package:
         binary_start = min(e["offset"] for e in self.exports if e["offset"] > 0)
         # Original binary region ends where the import table begins in the source package.
         binary_end = self.import_offset
+
+        # Sanity: detect ambiguous replacement keys to fail loud rather than silently
+        # clobbering same-named exports of a different class.
+        if replacement_class is None:
+            from collections import Counter
+            counts = Counter(e["name"] for e in self.exports if e["name"] in replacements)
+            ambiguous = [n for n, c in counts.items() if c > 1]
+            if ambiguous:
+                raise ValueError(
+                    f"replacement keys {ambiguous} match multiple exports — pass "
+                    f"replacement_class=<ClassName> to disambiguate"
+                )
 
         # Ensure any new names required by add_exports are in the name table.
         # Stock name table is reused as-is; new names are appended.
@@ -207,7 +228,10 @@ class Package:
             if e["size"] == 0:
                 new_exports.append({**e, "offset": 0})
                 continue
-            if e["name"] in replacements:
+            if e["name"] in replacements and (
+                replacement_class is None
+                or self.resolve_class(e["class_ref"]) == replacement_class
+            ):
                 blob = replacements[e["name"]]
                 if len(blob) == e["size"]:
                     # Same size — safe to overwrite in place at original offset.
@@ -257,7 +281,10 @@ class Package:
         out = bytearray(self.buf[:binary_end])  # header + names + entire original binary region
         # Patch same-size replacements in place
         for e in self.exports:
-            if e["size"] > 0 and e["name"] in replacements:
+            if e["size"] > 0 and e["name"] in replacements and (
+                replacement_class is None
+                or self.resolve_class(e["class_ref"]) == replacement_class
+            ):
                 blob = replacements[e["name"]]
                 if len(blob) == e["size"]:
                     out[e["offset"] : e["offset"] + e["size"]] = blob
