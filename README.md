@@ -389,24 +389,15 @@ Copy the contents of `patch/System/` and `patch/Textures/` into your install's `
 
 Triggered by: your target script doesn't use ASCII space to separate words. This section is the one place in the toolkit's docs that addresses CJK-style wrapping directly; the rest of the toolkit stays language-neutral.
 
-The engine treats ASCII space (`U+0020`) as a soft wrap point. For English that's exactly right. For CJK, it produces a single-line paragraph that overflows the text panel because there are no spaces to break on. There are three small text transforms that, applied to every translated string before you feed it to the build pipeline, make text wrap cleanly:
+The engine treats ASCII space (`U+0020`) as a soft wrap point. For English that's exactly right. For CJK, it produces a single-line paragraph that overflows the text panel because there are no spaces to break on.
 
-1. **ASCII space → non-breaking space.** Replace every `U+0020` in your translated text with `U+00A0`. The engine then refuses to break on those spaces, and the wrap-on-character path in the DLL patches above takes over.
-2. **Normalize dashes.** Pick one of `—` (em dash, `U+2014`), `–` (en dash, `U+2013`), or your script's preferred dash, and replace ASCII `--` and stray variants with it. Mixed dashes render unevenly because they pull from different glyph slots.
-3. **Strip zero-width spaces.** Translation tools sometimes paste in `U+200B` from the source. The engine treats it as a zero-width glyph, and the wrap-width math goes wrong.
-
-Drop-in helper:
+The fix is a one-line substitution applied to every translated string before you feed it to the build pipeline: replace `U+0020` with `U+00A0` (non-breaking space).
 
 ```python
-def prepare_for_engine(text: str) -> str:
-    """Apply CJK-friendly transforms before feeding text to the toolkit."""
-    text = text.replace("\u200B", "")        # 1. strip zero-width spaces
-    text = text.replace(" ", "\u00A0")         # 2. ASCII space -> NBSP
-    text = text.replace("--", "\u2014")        # 3. ASCII -- -> em dash
-    return text
+text = text.replace(" ", "\u00A0")
 ```
 
-Apply this in your translation pipeline before writing the `{key: text}` JSON. The toolkit deliberately performs *no* text transforms — what you put in is what gets encoded into the binary.
+The engine then refuses to break on those spaces, and the wrap-on-character path in the DLL patches above takes over. Apply this in your translation pipeline before writing the `{key: text}` JSON — the toolkit deliberately performs *no* text transforms, so what you put in is what gets encoded into the binary.
 
 ### Companion: enable the DLL patches
 
